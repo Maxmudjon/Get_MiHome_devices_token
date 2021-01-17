@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Get Mi Home devices token</title>
+    <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline';" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.100.2/css/materialize.min.css" />
+  </head>
+  <body style="background: white">
+    <div class="container" id="app" style="margin-top: 5rem">
+      <div class="progress" style="display: none">
+        <div class="indeterminate"></div>
+      </div>
+      <div id="loginPage">
+        <div class="card-panel red lighten-1" id="message" style="display: none"><h6>Message</h6></div>
+        <form>
+          <div>
+            <label>Enter Mi Home login</label>
+            <input type="text" id="login" autofocus />
+          </div>
+          <div>
+            <label>Enter Mi Home password</label>
+            <input type="password" id="password" autofocus />
+          </div>
+
+          <button class="waves-effect waves-light btn" type="submit" id="signButton">Sign in</button>
+        </form>
+      </div>
+      <div id="devicesPage" style="display: none">
+        <ul id="devicesList"></ul>
+      </div>
+    </div>
+  </body>
+
+  <script>
+    const electron = require("electron");
+    const { ipcRenderer } = electron;
+
+    const ul = document.querySelector("ul");
+
+    ipcRenderer.on("devices", function (e, result) {
+      const devicesPage = document.querySelector("#devicesPage");
+      const message = document.querySelector("#message");
+      const loading = document.querySelector(".progress");
+
+      if (result && result.message) {
+        const login = document.querySelector("#login");
+        const password = document.querySelector("#password");
+        const signButton = document.querySelector("#signButton");
+
+        login.disabled = false;
+        password.disabled = false;
+        signButton.disabled = false;
+        loading.style.display = "none";
+        message.style = "";
+        message.innerHTML = result.message;
+      } else {
+        loading.style.display = "none";
+        const form = document.querySelector("#loginPage");
+        devicesPage.style = "";
+        form.style.display = "none";
+
+        ul.className = "collection";
+
+        const devices = result.filter((device) => device.parent_model == "");
+        console.log(devices);
+
+        devices.forEach((device) => {
+          const li = document.createElement("li");
+          li.className = "collection-item";
+          li.insertAdjacentHTML(
+            "beforeend",
+            `<h5 class="title">${device.name}</h5><p>IP: ${device.localip} <p>MAC: ${device.mac} <br> Token: ${device.token} <br> Model: ${device.model} <br> Region: ${device.region}</p>`
+          );
+          ul.appendChild(li);
+        });
+      }
+    });
+
+    document.querySelector("form").addEventListener("submit", submitForm);
+
+    function submitForm(e) {
+      e.preventDefault();
+      const loading = document.querySelector(".progress");
+
+      const message = document.querySelector("#message");
+      message.innerHTML = "";
+      message.style.display = "none";
+
+      loading.style = "";
+
+      const login = document.querySelector("#login");
+      const password = document.querySelector("#password");
+      const signButton = document.querySelector("#signButton");
+
+      login.disabled = true;
+      password.disabled = true;
+      signButton.disabled = true;
+
+      ipcRenderer.send("getDevices", { login: login.value, password: password.value });
+    }
+  </script>
+  <script type="text/javascript" src="assets/materialize.min.js"></script>
+</html>

@@ -1,0 +1,64 @@
+{
+  "name": "getMiHomeDevicesToken",
+  "version": "1.0.2",
+  "description": "Get Mi Home devices token",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "pack": "electron-builder --dir",
+    "dist": "electron-builder",
+    "win": "electron-builder --win portable",
+    "mac": "electron-builder --mac pkg"
+  },
+  "keywords": [],
+  "author": "Payziyev Maxmudjon",
+  "license": "ISC",
+  "devDependencies": {
+    "electron": "^11.1.1",
+    "electron-builder": "^22.9.1"
+  },
+  "dependencies": {
+    "node-mihome": "0.0.30"
+  },
+  "build": {
+    "productName": "Get Mi Home devices token",
+    "appId": "maxmudjon.MiHomeToken",
+    "copyright": "Copyright © 2021 ${author}",
+    "win": {
+      "target": [
+        "portable"
+      ],
+      "icon": "assets/icons/win/icon.ico"
+    },
+    "mac": {
+      "target": [
+        "dmg"
+      ],
+      "identity": null,
+      "icon": "assets/icons/mac/icon.icns",
+      "category": "maxmudjon.MiHomeToken.app.category.utilities"
+    },
+    "dmg": {
+      "contents": [
+        {
+          "x": 110,
+          "y": 150
+        },
+        {
+          "x": 240,
+          "y": 150,
+          "type": "link",
+          "path": "/Applications"
+        }
+      ]
+    },
+    "portable": {
+      "artifactName": "get_token.exe"
+    },
+    "directories": {
+      "output": "electron/output",
+      "app": "./",
+      "buildResources": "electron/buildResources"
+    }
+  }
+}
