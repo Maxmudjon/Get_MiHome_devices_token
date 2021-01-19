@@ -1,5 +1,11 @@
 # Get Mi Home Devices Token App
 
+![](https://raw.githubusercontent.com/Maxmudjon/images/master/mihomemov.gif)
+
+## Download
+
+[Releases](https://github.com/Maxmudjon/Get_MiHome_devices_token/releases)
+
 ## Install dependencies
 
 ```sh
