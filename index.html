@@ -4,15 +4,15 @@
     <meta charset="UTF-8" />
     <title>Get Mi Home devices token</title>
     <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline';" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.100.2/css/materialize.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css" />
   </head>
-  <body style="background: white">
-    <div class="container" id="app" style="margin-top: 5rem">
-      <div class="progress" style="display: none">
+  <body style="background: white;">
+    <div class="container" id="app" style="margin-top: 5rem;">
+      <div class="progress" style="display: none;">
         <div class="indeterminate"></div>
       </div>
       <div id="loginPage">
-        <div class="card-panel red lighten-1" id="message" style="display: none"><h6>Message</h6></div>
+        <div class="card-panel red lighten-1" id="message" style="display: none;"><h6>Message</h6></div>
         <form>
           <div>
             <label>Enter Mi Home login</label>
@@ -22,12 +22,11 @@
             <label>Enter Mi Home password</label>
             <input type="password" id="password" autofocus />
           </div>
-
           <button class="waves-effect waves-light btn" type="submit" id="signButton">Sign in</button>
         </form>
       </div>
-      <div id="devicesPage" style="display: none">
-        <ul id="devicesList"></ul>
+      <div id="devicesPage" style="display: none;" class="row">
+        <div id="devicesList" class="devicesList col s12 m12 l12 xl12"></div>
       </div>
     </div>
   </body>
@@ -36,7 +35,7 @@
     const electron = require("electron");
     const { ipcRenderer } = electron;
 
-    const ul = document.querySelector("ul");
+    const devicesList = document.querySelector(".devicesList");
 
     ipcRenderer.on("devices", function (e, result) {
       const devicesPage = document.querySelector("#devicesPage");
@@ -60,19 +59,55 @@
         devicesPage.style = "";
         form.style.display = "none";
 
-        ul.className = "collection";
-
         const devices = result.filter((device) => device.parent_model == "");
-        console.log(devices);
+        let gatewayWithChildDevices = {};
+        const gateways = [...new Set(result.filter((device) => device.parent_model != "").map((item) => item.parent_model))];
+        gateways.forEach((gateway) => {
+          gatewayWithChildDevices[gateway] = result.filter((device) => device.parent_model == gateway);
+        });
 
         devices.forEach((device) => {
-          const li = document.createElement("li");
-          li.className = "collection-item";
-          li.insertAdjacentHTML(
-            "beforeend",
-            `<h5 class="title">${device.name}</h5><p>IP: ${device.localip} <p>MAC: ${device.mac} <br> Token: ${device.token} <br> Model: ${device.model} <br> Region: ${device.region}</p>`
-          );
-          ul.appendChild(li);
+          const div = document.createElement("div");
+          div.className = "card horizontal";
+          div.style = "border-radius: 1rem";
+          if (gatewayWithChildDevices.hasOwnProperty(device.model)) {
+            if (!!gatewayWithChildDevices[device.model].filter((g) => g.parent_id == device.did).length) {
+              div.insertAdjacentHTML(
+                "beforeend",
+                ` <div class="card-image">
+                <img src="${device.deviceImage}" width="168" height="168" style="object-fit: cover; ${device.isOnline ? "opacity: 1" : "opacity: 0.4"}">
+              </div>
+              <div class="card-content">
+                <span class="card-title" style="color: #000">${device.name}</span>
+                <p>IP: ${device.localip}</p>
+                <p>Token: ${device.token}</p>
+                <p>MAC: ${device.mac}</p>
+                <p>Model: ${device.model}</p>
+                <p>Region: ${device.region}</p>
+                <p>Child devices count: ${gatewayWithChildDevices[device.model].filter((g) => g.parent_id == device.did).length}</p>
+              </div>
+            `
+              );
+            }
+          } else {
+            div.insertAdjacentHTML(
+              "beforeend",
+              ` <div class="card-image">
+                <img src="${device.deviceImage}" width="168" height="168" style="object-fit: cover; ${device.isOnline ? "opacity: 1" : "opacity: 0.4"}">
+              </div>
+              <div class="card-content">
+                <span class="card-title" style="color: #000">${device.name}</span>
+                <p>IP: ${device.localip}</p>
+                <p>Token: ${device.token}</p>
+                <p>MAC: ${device.mac}</p>
+                <p>Model: ${device.model}</p>
+                <p>Region: ${device.region}</p>
+              </div>
+            `
+            );
+          }
+
+          devicesList.appendChild(div);
         });
       }
     });
@@ -102,3 +137,4 @@
   </script>
   <script type="text/javascript" src="assets/materialize.min.js"></script>
 </html>
+
