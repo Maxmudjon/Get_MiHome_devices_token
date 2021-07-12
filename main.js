@@ -1,6 +1,7 @@
 const electron = require("electron");
 const { app, BrowserWindow, Menu, ipcMain } = electron;
 const mihome = require("node-mihome");
+const deviceImagesAndModels = require("./only_images_and_models.json");
 let mainWindow;
 function createWindow() {
   mainWindow = new BrowserWindow({
@@ -14,7 +15,6 @@ function createWindow() {
   });
 
   mainWindow.setMenuBarVisibility(false);
-
   mainWindow.loadFile("index.html");
 }
 
@@ -48,6 +48,7 @@ ipcMain.on("getDevices", async (e, item) => {
       for (let j = 0; j < devices.length; j++) {
         const device = devices[j];
         device["region"] = country;
+        device.deviceImage = deviceImagesAndModels.filter((d) => d.model == device.model)[0].img;
         devicesWithRegion.push(device);
       }
       allDevices.push(...devicesWithRegion);
@@ -58,3 +59,4 @@ ipcMain.on("getDevices", async (e, item) => {
     mainWindow.webContents.send("devices", error);
   }
 });
+
