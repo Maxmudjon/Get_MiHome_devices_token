@@ -12,8 +12,6 @@
 npm i
 ```
 
-Get Mi Home devices token Windows / Mac OS app.
-
 ## Run on dev mode
 
 ```sh
