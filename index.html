@@ -4,15 +4,15 @@
     <meta charset="UTF-8" />
     <title>Get Mi Home devices token</title>
     <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline';" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.100.2/css/materialize.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css" />
   </head>
-  <body style="background: white">
-    <div class="container" id="app" style="margin-top: 5rem">
-      <div class="progress" style="display: none">
+  <body style="background: white;">
+    <div class="container" id="app" style="margin-top: 5rem;">
+      <div class="progress" style="display: none;">
         <div class="indeterminate"></div>
       </div>
       <div id="loginPage">
-        <div class="card-panel red lighten-1" id="message" style="display: none"><h6>Message</h6></div>
+        <div class="card-panel red lighten-1" id="message" style="display: none;"><h6>Message</h6></div>
         <form>
           <div>
             <label>Enter Mi Home login</label>
@@ -22,12 +22,68 @@
             <label>Enter Mi Home password</label>
             <input type="password" id="password" autofocus />
           </div>
-
+          <div class="input-field col s12" style="margin-top: 20px;">
+            <select id="serversList">
+              <option value="cn" selected>China</option>
+              <option value="ru">Russia</option>
+              <option value="us">USA</option>
+              <option value="tw">Taiwan</option>
+              <option value="sg">Singapore</option>
+              <option value="de">Germany</option>
+            </select>
+            <label>Servers</label>
+          </div>
           <button class="waves-effect waves-light btn" type="submit" id="signButton">Sign in</button>
         </form>
       </div>
-      <div id="devicesPage" style="display: none">
-        <ul id="devicesList"></ul>
+      <div id="devicesPage" style="display: none;" class="row">
+        <div style="display: flex; flex-direction: column; margin: 10px;">
+          <button class="waves-effect waves-light btn" id="refreshButton">Refresh devices list</button>
+        </div>
+        <div id="devicesList" class="devicesList col s12 m12 l12 xl12"></div>
+      </div>
+      <div id="setVacuumVoicePack" class="modal">
+        <div class="modal-content" style="height: 500px;">
+          <h4>Modal Header</h4>
+
+          <div class="input-field col s12" style="padding-top: 10px;">
+            <select id="setVacuumVoicePackSelect">
+              <option value="" disabled selected>Choose voice</option>
+              <option value="5021">озвучка Винни Пух</option>
+              <option value="5022">озвучка Домовенок Кузя + Алиса</option>
+              <option value="5023">озвучка ельцин</option>
+              <option value="5024">озвучка Алиса</option>
+              <option value="5025">озвучка Робот Бендер + Алиса</option>
+              <option value="5026">озвучка Starcraft_2</option>
+              <option value="5027">озвучка WarCraft_II</option>
+              <option value="5028">озвучка Максим</option>
+              <option value="5029">озвучка женский голос</option>
+              <option value="5030">озвучка Татьяна</option>
+              <option value="5031">озвучка Максим 1</option>
+              <option value="5032">озвучка Максим 2</option>
+              <option value="5033">озвучка Максим 3</option>
+              <option value="5034">озвучка Максим мат 1</option>
+              <option value="5035">озвучка Максим мат 2</option>
+              <option value="5036">озвучка Максим мат 3</option>
+              <option value="5037">озвучка Советские фильмы</option>
+              <option value="5038">озвучка Советские фильмы 2</option>
+              <option value="5039">озвучка google_voice</option>
+              <option value="5040">озвучка кожанные ублюдки 2</option>
+              <option value="5041">озвучка Максим мат_3</option>
+              <option value="5042">озвучка Филипп</option>
+              <option value="5043">озвучка Кожаные ублюдки</option>
+              <option value="5044">озвучка Кузя+Захар</option>
+              <option value="5045">озвучка Вини пух 2</option>
+              <option value="5046">озвучка Вини пух 3</option>
+              <option value="5047">озвучка Захар</option>
+              <option value="5048">озвучка R2D2_RU</option>
+            </select>
+            <label>Voice packs</label>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <a data-id="installVacuumVoicePack" class="waves-effect waves-green btn-flat">Install</a>
+        </div>
       </div>
     </div>
   </body>
@@ -36,12 +92,14 @@
     const electron = require("electron");
     const { ipcRenderer } = electron;
 
-    const ul = document.querySelector("ul");
+    const devicesList = document.querySelector(".devicesList");
+    let ip, token;
 
     ipcRenderer.on("devices", function (e, result) {
       const devicesPage = document.querySelector("#devicesPage");
       const message = document.querySelector("#message");
       const loading = document.querySelector(".progress");
+      devicesList.innerHTML = "";
 
       if (result && result.message) {
         const login = document.querySelector("#login");
@@ -60,21 +118,168 @@
         devicesPage.style = "";
         form.style.display = "none";
 
-        ul.className = "collection";
-
         const devices = result.filter((device) => device.parent_model == "");
-        console.log(devices);
+        let gatewayWithChildDevices = {};
+        const gateways = [...new Set(result.filter((device) => device.parent_model != "").map((item) => item.parent_model))];
+        gateways.forEach((gateway) => {
+          gatewayWithChildDevices[gateway] = result.filter((device) => device.parent_model == gateway);
+        });
 
         devices.forEach((device) => {
-          const li = document.createElement("li");
-          li.className = "collection-item";
-          li.insertAdjacentHTML(
-            "beforeend",
-            `<h5 class="title">${device.name}</h5><p>IP: ${device.localip} <p>MAC: ${device.mac} <br> Token: ${device.token} <br> Model: ${device.model} <br> Region: ${device.region}</p>`
-          );
-          ul.appendChild(li);
+          const div = document.createElement("div");
+          div.className = "card horizontal";
+          div.style = "border-radius: 1rem";
+          div.id = device.did;
+
+          if (gatewayWithChildDevices.hasOwnProperty(device.model)) {
+            if (!!gatewayWithChildDevices[device.model].filter((g) => g.parent_id == device.did).length) {
+              div.insertAdjacentHTML(
+                "beforeend",
+                ` <div class="card-image" style="display: flex; flex-direction: column; justify-content: center;">
+                    <img src="${device.deviceImage}" width="168" height="168" style="object-fit: cover; ${device.isOnline ? "opacity: 1" : "opacity: 0.4"}">
+                  </div>
+                  <div class="card-stacked">
+                    <div class="card-content">
+                      <span class="card-title" style="color: #000">${device.name}</span>
+                      <p>IP: ${device.localip}</p>
+                      <p>Token: ${device.token}</p>
+                      <p>MAC: ${device.mac}</p>
+                      <p>Model: ${device.model}</p>
+                      <p>Region: ${device.region}</p>
+                      <p>Child devices count: ${gatewayWithChildDevices[device.model].filter((g) => g.parent_id == device.did).length}</p>
+                    </div>
+                  </div>
+                `
+              );
+            }
+          } else {
+            div.insertAdjacentHTML(
+              "beforeend",
+              ` <div class="card-image" style="display: flex; flex-direction: column; justify-content: center;">
+                  <img src="${device.deviceImage}" width="168" height="168" style="object-fit: cover; ${device.isOnline ? "opacity: 1" : "opacity: 0.4"}">
+                </div>
+                <div class="card-stacked">
+                  <div class="card-content">
+                    <span class="card-title" style="color: #000">${device.name}</span>
+                    <p>IP: ${device.localip}</p>
+                    <p>Token: ${device.token}</p>
+                    <p>MAC: ${device.mac}</p>
+                    <p>Model: ${device.model}</p>
+                    <p>Region: ${device.region}</p>
+                  </div>
+                </div>
+              `
+            );
+          }
+
+          if (device.model == "dreame.vacuum.mc1808") {
+            const footerAction = document.createElement("div");
+            footerAction.className = "card-action";
+            footerAction.insertAdjacentHTML(
+              "beforeend",
+              `<a class="waves-effect waves-light btn" data-vacuumDeviceSetVoicePack='true' data-ip=${device.localip} data-token=${device.token}>Install voice pack</a><a style="margin-left: 10px" class="waves-effect waves-light btn" data-vacuumDevicePlayVoice='true' data-ip=${device.localip} data-token=${device.token}>Play sound</a>`
+            );
+
+            let cardStacked = null;
+            for (var i = 0; i < div.childNodes.length; i++) {
+              if (div.childNodes[i].className == "card-stacked") {
+                cardStacked = div.childNodes[i];
+                break;
+              }
+            }
+
+            cardStacked.appendChild(footerAction);
+          }
+
+          devicesList.appendChild(div);
         });
       }
+    });
+
+    ipcRenderer.on("vacuumVoicePackSuccessfullyInstalled", function (e, result) {
+      if (result && result.message) {
+      } else {
+        let modalElem = document.querySelector("#setVacuumVoicePack");
+        let modalInstance = M.Modal.getInstance(modalElem);
+        modalInstance.close();
+      }
+    });
+
+    document.body.addEventListener("click", (e) => {
+      let modalElem = document.querySelector("#setVacuumVoicePack");
+      let modalInstance = M.Modal.getInstance(modalElem);
+
+      let selectElem = document.querySelector("#setVacuumVoicePackSelect");
+      let selectInstance = M.FormSelect.getInstance(selectElem);
+
+      if (e.target.dataset.vacuumdevicesetvoicepack) {
+        modalInstance.open();
+        ip = e.target.dataset.ip;
+        token = e.target.dataset.token;
+      }
+
+      if (e.target.dataset.vacuumdeviceplayvoice) {
+        ip = e.target.dataset.ip;
+        token = e.target.dataset.token;
+        ipcRenderer.send("playVoice", {
+          ip,
+          token,
+        });
+      }
+
+      if (e.target.id == "refreshButton") {
+        const login = document.querySelector("#login");
+        const password = document.querySelector("#password");
+        const server = document.getElementById("serversList").M_FormSelect.input.value;
+
+        ipcRenderer.send("getDevices", { login: login.value, password: password.value, server });
+      }
+
+      if (e.target.dataset.id == "installVacuumVoicePack") {
+        const voices = [
+          { name: "озвучка Винни Пух", sa_id: 5021 },
+          { name: "озвучка Домовенок Кузя + Алиса", sa_id: 5022 },
+          { name: "озвучка ельцин", sa_id: 5023 },
+          { name: "озвучка Алиса", sa_id: 5024 },
+          { name: "озвучка Робот Бендер + Алиса", sa_id: 5025 },
+          { name: "озвучка Starcraft_2", sa_id: 5026 },
+          { name: "озвучка WarCraft_II", sa_id: 5027 },
+          { name: "озвучка Максим", sa_id: 5028 },
+          { name: "озвучка женский голос", sa_id: 5029 },
+          { name: "озвучка Татьяна", sa_id: 5030 },
+          { name: "озвучка Максим 1", sa_id: 5031 },
+          { name: "озвучка Максим 2", sa_id: 5032 },
+          { name: "озвучка Максим 3", sa_id: 5033 },
+          { name: "озвучка Максим мат 1", sa_id: 5034 },
+          { name: "озвучка Максим мат 2", sa_id: 5035 },
+          { name: "озвучка Максим мат 3", sa_id: 5036 },
+          { name: "озвучка Советские фильмы", sa_id: 5037 },
+          { name: "озвучка Советские фильмы 2", sa_id: 5038 },
+          { name: "озвучка google_voice", sa_id: 5039 },
+          { name: "озвучка кожанные ублюдки 2", sa_id: 5040 },
+          { name: "озвучка Максим мат_3", sa_id: 5041 },
+          { name: "озвучка Филипп", sa_id: 5042 },
+          { name: "озвучка Кожаные ублюдки", sa_id: 5043 },
+          { name: "озвучка Кузя+Захар", sa_id: 5044 },
+          { name: "озвучка Вини пух 2", sa_id: 5045 },
+          { name: "озвучка Вини пух 3", sa_id: 5046 },
+          { name: "озвучка Захар", sa_id: 5047 },
+          { name: "озвучка R2D2_RU", sa_id: 5048 },
+        ];
+        ipcRenderer.send("setVacuumVoicePack", {
+          ip,
+          token,
+          packID: voices.filter((v) => v.name == document.getElementById("setVacuumVoicePackSelect").M_FormSelect.input.value)[0].sa_id,
+        });
+      }
+    });
+
+    document.addEventListener("DOMContentLoaded", () => {
+      let modalElems = document.querySelector(".modal");
+      let modalInstances = M.Modal.init(modalElems, { dismissible: false });
+
+      let selectElems = document.querySelectorAll("select");
+      let selectInstances = M.FormSelect.init(selectElems);
     });
 
     document.querySelector("form").addEventListener("submit", submitForm);
@@ -92,12 +297,13 @@
       const login = document.querySelector("#login");
       const password = document.querySelector("#password");
       const signButton = document.querySelector("#signButton");
+      const server = document.getElementById("serversList").M_FormSelect.input.value;
 
       login.disabled = true;
       password.disabled = true;
       signButton.disabled = true;
 
-      ipcRenderer.send("getDevices", { login: login.value, password: password.value });
+      ipcRenderer.send("getDevices", { login: login.value, password: password.value, server });
     }
   </script>
   <script type="text/javascript" src="assets/materialize.min.js"></script>

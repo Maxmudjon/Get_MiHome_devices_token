@@ -1,6 +1,6 @@
 {
   "name": "getMiHomeDevicesToken",
-  "version": "1.0.2",
+  "version": "1.0.5",
   "description": "Get Mi Home devices token",
   "main": "main.js",
   "scripts": {
@@ -14,10 +14,11 @@
   "author": "Payziyev Maxmudjon",
   "license": "ISC",
   "devDependencies": {
-    "electron": "^11.1.1",
+    "electron": "^11.4.10",
     "electron-builder": "^22.9.1"
   },
   "dependencies": {
+    "miio": "^0.15.6",
     "node-mihome": "0.0.30"
   },
   "build": {
