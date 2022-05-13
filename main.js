@@ -8,6 +8,8 @@ function createWindow() {
   mainWindow = new BrowserWindow({
     width: 800,
     height: 600,
+    minWidth: 800,
+    minHeight: 600,
     webPreferences: {
       nodeIntegration: true,
       devTools: true,
@@ -49,7 +51,12 @@ ipcMain.on("getDevices", async (e, item) => {
     for (let j = 0; j < devices.length; j++) {
       const device = devices[j];
       device["region"] = country;
-      device.deviceImage = deviceImagesAndModels.find((d) => d.model == device.model).img;
+
+      if (deviceImagesAndModels.find((d) => d.model == device.model)) {
+        device.deviceImage = deviceImagesAndModels.find((d) => d.model == device.model).img;
+      } else {
+        device.deviceImage = "";
+      }
       devicesWithRegion.push(device);
     }
 

@@ -6,13 +6,13 @@
     <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline';" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css" />
   </head>
-  <body style="background: white;">
-    <div class="container" id="app" style="margin-top: 5rem;">
-      <div class="progress" style="display: none;">
+  <body style="background: white">
+    <div class="container" id="app" style="margin-top: 5rem">
+      <div class="progress" style="display: none">
         <div class="indeterminate"></div>
       </div>
       <div id="loginPage">
-        <div class="card-panel red lighten-1" id="message" style="display: none;"><h6>Message</h6></div>
+        <div class="card-panel red lighten-1" id="message" style="display: none"><h6>Message</h6></div>
         <form>
           <div>
             <label>Enter Mi Home login</label>
@@ -22,7 +22,7 @@
             <label>Enter Mi Home password</label>
             <input type="password" id="password" autofocus />
           </div>
-          <div class="input-field col s12" style="margin-top: 20px;">
+          <div class="input-field col s12" style="margin-top: 20px">
             <select id="serversList">
               <option value="cn" selected>China</option>
               <option value="ru">Russia</option>
@@ -36,17 +36,17 @@
           <button class="waves-effect waves-light btn" type="submit" id="signButton">Sign in</button>
         </form>
       </div>
-      <div id="devicesPage" style="display: none;" class="row">
-        <div style="display: flex; flex-direction: column; margin: 10px;">
+      <div id="devicesPage" style="display: none" class="row">
+        <div style="display: flex; flex-direction: column; margin: 10px">
           <button class="waves-effect waves-light btn" id="refreshButton">Refresh devices list</button>
         </div>
         <div id="devicesList" class="devicesList col s12 m12 l12 xl12"></div>
       </div>
       <div id="setVacuumVoicePack" class="modal">
-        <div class="modal-content" style="height: 500px;">
+        <div class="modal-content" style="height: 500px">
           <h4>Modal Header</h4>
 
-          <div class="input-field col s12" style="padding-top: 10px;">
+          <div class="input-field col s12" style="padding-top: 10px">
             <select id="setVacuumVoicePackSelect">
               <option value="" disabled selected>Choose voice</option>
               <option value="5021">озвучка Винни Пух</option>
