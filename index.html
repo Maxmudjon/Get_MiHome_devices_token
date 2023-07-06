@@ -15,7 +15,7 @@
         <div class="card-panel red lighten-1" id="message" style="display: none"><h6>Message</h6></div>
         <form>
           <div>
-            <label>Enter Mi Home login</label>
+            <label>Enter Mi Home login (Usually an e-mail)</label>
             <input type="text" id="login" autofocus />
           </div>
           <div>
@@ -147,6 +147,7 @@
                       <p>Model: ${device.model}</p>
                       <p>Region: ${device.region}</p>
                       <p>Child devices count: ${gatewayWithChildDevices[device.model].filter((g) => g.parent_id == device.did).length}</p>
+                      <p>Device ID: ${device.did ?? 'Not found'}</p>
                     </div>
                   </div>
                 `
@@ -166,6 +167,7 @@
                     <p>MAC: ${device.mac}</p>
                     <p>Model: ${device.model}</p>
                     <p>Region: ${device.region}</p>
+                    <p>Device ID: ${device.did ?? 'Not found'}</p>
                   </div>
                 </div>
               `
