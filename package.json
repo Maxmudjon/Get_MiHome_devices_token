@@ -18,6 +18,7 @@
     "electron-builder": "^22.9.1"
   },
   "dependencies": {
+    "materialize-css": "^1.0.0",
     "miio": "^0.15.6",
     "node-mihome": "0.0.30"
   },
