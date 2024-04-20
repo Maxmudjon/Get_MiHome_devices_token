@@ -2,7 +2,8 @@ const electron = require("electron");
 const { app, BrowserWindow, Menu, ipcMain } = electron;
 const mihome = require("node-mihome");
 const miio = require("miio");
-const deviceImagesAndModels = require("./only_images_and_models.json");
+const deviceImagesAndModelsArr = require("./only_images_and_models.json");
+const deviceImagesAndModelsMap = new Map(deviceImagesAndModelsArr.map((item) => [item.model, item]));
 let mainWindow;
 function createWindow() {
   mainWindow = new BrowserWindow({
@@ -51,12 +52,7 @@ ipcMain.on("getDevices", async (e, item) => {
     for (let j = 0; j < devices.length; j++) {
       const device = devices[j];
       device["region"] = country;
-
-      if (deviceImagesAndModels.find((d) => d.model == device.model)) {
-        device.deviceImage = deviceImagesAndModels.find((d) => d.model == device.model).img;
-      } else {
-        device.deviceImage = "";
-      }
+      device.deviceImage = deviceImagesAndModelsMap.get(device.model)?.img || "";
       devicesWithRegion.push(device);
     }
 
