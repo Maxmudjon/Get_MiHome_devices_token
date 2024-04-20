@@ -7,11 +7,11 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css" />
   </head>
   <body style="background: white">
-    <div class="container" id="app" style="margin-top: 5rem">
-      <div class="progress" style="display: none">
-        <div class="indeterminate"></div>
-      </div>
-      <div id="loginPage">
+    <div id="loading" class="progress" style="visibility: hidden; position: fixed;top: 0;margin: 0;padding: 4px;">
+      <div class="indeterminate"></div>
+    </div>
+    <div class="container" id="app">
+      <div id="loginPage" style="margin-top: 5rem">
         <div class="card-panel red lighten-1" id="message" style="display: none"><h6>Message</h6></div>
         <form>
           <div>
@@ -36,14 +36,14 @@
           <p>Additional features:</p>
           <p>
             <label>
-              <input type="checkbox" class="filled-in" checked id="vacuumVoiceCheckbox" />
-              <span>Change Vacuum Cleaner Voice</span>
+              <input type="checkbox" class="filled-in" checked id="lanModeCheckbox" />
+              <span>Change Bulb's LAN Mode</span>
             </label>
           </p>
           <p>
             <label>
-              <input type="checkbox" class="filled-in" checked id="lanModeCheckbox" />
-              <span>Change Bulb's LAN Mode</span>
+              <input type="checkbox" class="filled-in" checked id="vacuumVoiceCheckbox" />
+              <span>Change Vacuum Cleaner Voice</span>
             </label>
           </p>
           <button class="waves-effect waves-light btn" type="submit" id="signButton">Sign in</button>
@@ -115,7 +115,7 @@
     ipcRenderer.on("devices", function (e, result) {
       const devicesPage = document.querySelector("#devicesPage");
       const message = document.querySelector("#message");
-      const loading = document.querySelector(".progress");
+      const loading = document.getElementById("loading");
       devicesList.innerHTML = "";
 
       if (result && result.message) {
@@ -133,14 +133,21 @@
         lanModeCheckbox.disabled = false;
         vacuumVoiceCheckbox.disabled = false;
 
-        loading.style.display = "none";
+        loading.style.visibility = "hidden";
         message.style = "";
         message.innerHTML = result.message;
       } else {
-        loading.style.display = "none";
+        loading.style.visibility = "hidden";
         const form = document.querySelector("#loginPage");
         devicesPage.style = "";
         form.style.display = "none";
+
+        /** after refresh */
+        const app = document.getElementById("app");
+        app.style.pointerEvents = "all";
+        app.style.opacity = "1";
+        loading.style.visibility = "hidden";
+        /** */
 
         const devices = result.filter((device) => device.parent_model == "");
         let gatewayWithChildDevices = {};
@@ -281,6 +288,14 @@
         const login = document.querySelector("#login");
         const password = document.querySelector("#password");
         const server = document.getElementById("serversList").M_FormSelect.input.value;
+        
+        /** refresh clicked */
+        const app = document.getElementById("app");
+        app.style.pointerEvents = "none";
+        app.style.opacity = "0.5";
+        const loading = document.getElementById("loading");
+        loading.style.visibility = "visible";
+        /** */
 
         ipcRenderer.send(
           "getDevices",
@@ -339,13 +354,13 @@
 
     function submitForm(e) {
       e.preventDefault();
-      const loading = document.querySelector(".progress");
+      const loading = document.getElementById("loading");
 
       const message = document.querySelector("#message");
       message.innerHTML = "";
       message.style.display = "none";
 
-      loading.style = "";
+      loading.style.visibility = "visible";
 
       const login = document.querySelector("#login");
       const password = document.querySelector("#password");
