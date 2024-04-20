@@ -15,7 +15,7 @@
         <div class="card-panel red lighten-1" id="message" style="display: none"><h6>Message</h6></div>
         <form>
           <div>
-            <label>Enter Mi Home login</label>
+            <label>Enter Mi Home login (Usually an e-mail)</label>
             <input type="text" id="login" autofocus />
           </div>
           <div>
@@ -33,6 +33,19 @@
             </select>
             <label>Servers</label>
           </div>
+          <p>Additional features:</p>
+          <p>
+            <label>
+              <input type="checkbox" class="filled-in" checked id="vacuumVoiceCheckbox" />
+              <span>Change Vacuum Cleaner Voice</span>
+            </label>
+          </p>
+          <p>
+            <label>
+              <input type="checkbox" class="filled-in" checked id="lanModeCheckbox" />
+              <span>Change Bulb's LAN Mode</span>
+            </label>
+          </p>
           <button class="waves-effect waves-light btn" type="submit" id="signButton">Sign in</button>
         </form>
       </div>
@@ -94,6 +107,10 @@
 
     const devicesList = document.querySelector(".devicesList");
     let ip, token;
+    const icons = {
+      wifi: 'assets/icons/material/wifi.svg',
+      wifi_off: 'assets/icons/material/wifi_off.svg'
+    };
 
     ipcRenderer.on("devices", function (e, result) {
       const devicesPage = document.querySelector("#devicesPage");
@@ -105,10 +122,17 @@
         const login = document.querySelector("#login");
         const password = document.querySelector("#password");
         const signButton = document.querySelector("#signButton");
+        const serversList = document.getElementById("serversList").M_FormSelect.input;
+        const lanModeCheckbox = document.getElementById("lanModeCheckbox");
+        const vacuumVoiceCheckbox = document.getElementById("vacuumVoiceCheckbox");
 
         login.disabled = false;
         password.disabled = false;
         signButton.disabled = false;
+        serversList.disabled = false;
+        lanModeCheckbox.disabled = false;
+        vacuumVoiceCheckbox.disabled = false;
+
         loading.style.display = "none";
         message.style = "";
         message.innerHTML = result.message;
@@ -136,6 +160,7 @@
               div.insertAdjacentHTML(
                 "beforeend",
                 ` <div class="card-image" style="display: flex; flex-direction: column; justify-content: center;">
+                    <img src="${device.isOnline ? icons.wifi : icons.wifi_off }" style="position: absolute;left: 1rem;top: 1rem; ${device.isOnline ? "opacity: 1" : "opacity: 0.4"}">
                     <img src="${device.deviceImage}" width="168" height="168" style="object-fit: cover; ${device.isOnline ? "opacity: 1" : "opacity: 0.4"}">
                   </div>
                   <div class="card-stacked">
@@ -156,6 +181,7 @@
             div.insertAdjacentHTML(
               "beforeend",
               ` <div class="card-image" style="display: flex; flex-direction: column; justify-content: center;">
+                  <img src="${device.isOnline ? icons.wifi : icons.wifi_off }" style="position: absolute;left: 1rem;top: 1rem; ${device.isOnline ? "opacity: 1" : "opacity: 0.4"}">
                   <img src="${device.deviceImage}" width="168" height="168" style="object-fit: cover; ${device.isOnline ? "opacity: 1" : "opacity: 0.4"}">
                 </div>
                 <div class="card-stacked">
@@ -166,13 +192,29 @@
                     <p>MAC: ${device.mac}</p>
                     <p>Model: ${device.model}</p>
                     <p>Region: ${device.region}</p>
+                    ${device.lanModeSupported && window.lanModeCheckboxChecked
+                      ? `<div 
+                            class="switch"
+                            data-lanmodeswitch="true"
+                            data-ip=${device.localip}
+                            data-token=${device.token}
+                            style="cursor: pointer; display: flex; align-items: center; height: 30px;"
+                          >
+                          <label style="pointer-events: none;font-size: 14px;color: inherit;">
+                            LAN Mode
+                            <input type="checkbox" ${device.lanMode ? 'checked=""': ''}">
+                            <span class="lever"></span>
+                          </label>
+                        </div>`
+                      : ''
+                    }
                   </div>
                 </div>
               `
             );
           }
 
-          if (device.model == "dreame.vacuum.mc1808") {
+          if (window.vacuumVoiceCheckboxChecked && device.model == "dreame.vacuum.mc1808") {
             const footerAction = document.createElement("div");
             footerAction.className = "card-action";
             footerAction.insertAdjacentHTML(
@@ -212,6 +254,14 @@
       let selectElem = document.querySelector("#setVacuumVoicePackSelect");
       let selectInstance = M.FormSelect.getInstance(selectElem);
 
+      if (e.target.dataset.lanmodeswitch) {
+        e.target.style.opacity = "0.5";
+        e.target.style.pointerEvents = "none";
+        const ip = e.target.dataset.ip;
+        const token = e.target.dataset.token;
+        ipcRenderer.send("toggleLanMode", { ip, token });
+      }
+
       if (e.target.dataset.vacuumdevicesetvoicepack) {
         modalInstance.open();
         ip = e.target.dataset.ip;
@@ -232,7 +282,10 @@
         const password = document.querySelector("#password");
         const server = document.getElementById("serversList").M_FormSelect.input.value;
 
-        ipcRenderer.send("getDevices", { login: login.value, password: password.value, server });
+        ipcRenderer.send(
+          "getDevices",
+          { login: login.value, password: password.value, server, lanMode: window.lanModeCheckboxChecked }
+        );
       }
 
       if (e.target.dataset.id == "installVacuumVoicePack") {
@@ -297,13 +350,24 @@
       const login = document.querySelector("#login");
       const password = document.querySelector("#password");
       const signButton = document.querySelector("#signButton");
-      const server = document.getElementById("serversList").M_FormSelect.input.value;
+      const serversList = document.getElementById("serversList").M_FormSelect.input
+      const server = serversList.value;
+      const lanModeCheckbox = document.getElementById("lanModeCheckbox");
+      const vacuumVoiceCheckbox = document.getElementById("vacuumVoiceCheckbox");
+      window.lanModeCheckboxChecked = lanModeCheckbox.checked;
+      window.vacuumVoiceCheckboxChecked = vacuumVoiceCheckbox.checked;
 
       login.disabled = true;
       password.disabled = true;
       signButton.disabled = true;
+      serversList.disabled = true;
+      lanModeCheckbox.disabled = true;
+      vacuumVoiceCheckbox.disabled = true;
 
-      ipcRenderer.send("getDevices", { login: login.value, password: password.value, server });
+      ipcRenderer.send(
+        "getDevices", 
+        { login: login.value, password: password.value, server, lanMode: window.lanModeCheckboxChecked }
+      );
     }
   </script>
   <script type="text/javascript" src="assets/materialize.min.js"></script>
