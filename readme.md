@@ -1,10 +1,35 @@
-# Get Mi Home Devices Token App
+# MiHomeToolkit
 
-![](https://raw.githubusercontent.com/Maxmudjon/images/master/mihomemov.gif)
+A versatile tool for managing Mi Home smart devices.
+
+## Features
+
+- View device information, including tokens
+- Enable LAN mode for bulbs
+
+## Usage
+
+### 1. Login
+
+![Login Screen](.github/images/login-screen.png)
+
+### 2. Use the app
+
+![Main screen](.github/images/main-screen.png)
+
+## Why desktop app?
+
+Although the `node-mihome` package allows signing in to a MiHome account and accessing devices, it's not feasible for browser use due to the inability to handle request headers within the browser environment:
+
+```js
+// _loginStep3() {
+const headers = res.headers.raw()
+const cookies = headers['set-cookie']
+```
 
 ## Download
 
-[Releases](https://github.com/Maxmudjon/Get_MiHome_devices_token/releases)
+[Releases](../../releases)
 
 ## Install dependencies
 
@@ -12,7 +37,7 @@
 npm i
 ```
 
-Get Mi Home devices token Windows / Mac OS app.
+MiHomeToolkit Windows / MacOS app.
 
 ## Run on dev mode
 
@@ -33,7 +58,3 @@ npm run win
 ```sh
 npm run mac
 ```
-
-Paypal: <https://paypal.me/sallo>
-
-yoomoney: https://yoomoney.ru/to/410013864894090

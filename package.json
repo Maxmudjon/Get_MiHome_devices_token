@@ -1,7 +1,7 @@
 {
-  "name": "getMiHomeDevicesToken",
+  "name": "mi-home-toolkit",
   "version": "1.0.6",
-  "description": "Get Mi Home devices token",
+  "description": "A versatile tool for managing Mi Home smart devices, including viewing device information like tokens and enabling LAN mode for bulbs",
   "main": "main.js",
   "scripts": {
     "start": "electron .",
@@ -11,19 +11,20 @@
     "mac": "electron-builder --mac pkg"
   },
   "keywords": [],
-  "author": "Payziyev Maxmudjon",
+  "author": "Dmitrii Kuzmin",
   "license": "ISC",
   "devDependencies": {
     "electron": "^11.4.10",
     "electron-builder": "^22.9.1"
   },
   "dependencies": {
+    "materialize-css": "^1.0.0",
     "miio": "^0.15.6",
     "node-mihome": "0.0.30"
   },
   "build": {
-    "productName": "Get Mi Home devices token",
-    "appId": "maxmudjon.MiHomeToken",
+    "productName": "Mi Home Toolkit",
+    "appId": "apply3d.MiHomeToolkit",
     "copyright": "Copyright © 2022 ${author}",
     "win": {
       "target": [
@@ -37,7 +38,7 @@
       ],
       "identity": null,
       "icon": "assets/icons/mac/icon.icns",
-      "category": "maxmudjon.MiHomeToken.app.category.utilities"
+      "category": "apply3d.MiHomeToolkit.app.category.utilities"
     },
     "dmg": {
       "contents": [
@@ -54,7 +55,7 @@
       ]
     },
     "portable": {
-      "artifactName": "Get token.exe"
+      "artifactName": "MiHomeToolkit.exe"
     },
     "directories": {
       "output": "electron/output",
