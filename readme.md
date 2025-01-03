@@ -33,7 +33,3 @@ npm run win
 ```sh
 npm run mac
 ```
-
-Paypal: <https://paypal.me/sallo>
-
-yoomoney: https://yoomoney.ru/to/410013864894090
